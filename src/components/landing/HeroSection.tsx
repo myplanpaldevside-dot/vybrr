@@ -32,7 +32,7 @@ export function HeroSection() {
 
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 text-balance">
             Hire world-class digital creators or showcase your work and get paid.
-            Designers, editors, musicians, developers — all in one vibe.
+            Designers, editors, musicians, developers, all in one vibe.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
