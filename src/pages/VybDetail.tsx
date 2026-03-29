@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { PageMeta } from "@/components/PageMeta";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -88,6 +89,7 @@ export default function VybDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta title={vyb.title} description={vyb.description || `Book ${vyb.title} on Vybrr.`} />
       <Navbar />
       <div className="container pt-24 pb-16 px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

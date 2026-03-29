@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { PageMeta } from "@/components/PageMeta";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/landing/Navbar";
@@ -68,6 +69,7 @@ export default function CreatorProfile() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta title={profile.display_name || "Creator"} description={profile.bio || `Check out ${profile.display_name}'s work on Vybrr.`} />
       <Navbar />
       <div className="container pt-24 pb-16 px-4">
         {/* Profile Header */}

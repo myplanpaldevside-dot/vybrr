@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PageMeta } from "@/components/PageMeta";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <PageMeta title="Log In" />
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Link to="/">

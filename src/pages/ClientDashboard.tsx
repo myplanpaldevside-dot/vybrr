@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PageMeta } from "@/components/PageMeta";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +39,7 @@ export default function ClientDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta title="My Orders" />
       <Navbar />
       <div className="container pt-24 pb-16 px-4">
         <h1 className="text-2xl font-heading font-bold mb-6">My Orders</h1>

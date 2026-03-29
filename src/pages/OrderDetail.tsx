@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { PageMeta } from "@/components/PageMeta";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -78,6 +79,7 @@ export default function OrderDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta title={`Order: ${(order as any).vybs?.title || "Details"}`} />
       <Navbar />
       <div className="container pt-24 pb-16 px-4 max-w-3xl">
         <div className="glass-card p-6 mb-6">
