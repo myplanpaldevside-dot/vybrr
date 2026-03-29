@@ -4,11 +4,11 @@ import { Badge } from "@/components/ui/badge";
 
 const creators = [
   {
-    name: "Aria Chen",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face",
-    specialty: "UI/UX Design",
+    name: "Chioma Okafor",
+    avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=200&fit=crop&crop=face",
+    specialty: "Brand Identity",
     rating: 4.9,
-    startingAt: 120,
+    startingAt: 45000,
     level: "Pro",
   },
   {
@@ -16,24 +16,56 @@ const creators = [
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
     specialty: "Motion Graphics",
     rating: 5.0,
-    startingAt: 200,
+    startingAt: 80000,
+    level: "Expert",
+  },
+  {
+    name: "Adaeze Nwankwo",
+    avatar: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=200&h=200&fit=crop&crop=face",
+    specialty: "Music Production",
+    rating: 4.8,
+    startingAt: 30000,
+    level: "Pro",
+  },
+  {
+    name: "Tunde Bakare",
+    avatar: "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=200&h=200&fit=crop&crop=face",
+    specialty: "Video Editing",
+    rating: 4.9,
+    startingAt: 55000,
     level: "Expert",
   },
   {
     name: "Luna Park",
     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face",
-    specialty: "Music Production",
-    rating: 4.8,
-    startingAt: 80,
+    specialty: "UI/UX Design",
+    rating: 4.7,
+    startingAt: 60000,
     level: "Pro",
   },
   {
-    name: "Dex Ramirez",
+    name: "Emeka Eze",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
-    specialty: "Video Editing",
-    rating: 4.9,
-    startingAt: 150,
+    specialty: "Web Development",
+    rating: 5.0,
+    startingAt: 100000,
     level: "Expert",
+  },
+  {
+    name: "Fatima Bello",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face",
+    specialty: "Content Writing",
+    rating: 4.8,
+    startingAt: 20000,
+    level: "Rising",
+  },
+  {
+    name: "Aria Chen",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face",
+    specialty: "Photography",
+    rating: 4.9,
+    startingAt: 75000,
+    level: "Pro",
   },
 ];
 
@@ -89,7 +121,7 @@ export function FeaturedCreators() {
 
               <div className="mt-3 pt-3 border-t border-border/50">
                 <span className="text-xs text-muted-foreground">Starting at </span>
-                <span className="text-sm font-heading font-semibold">${creator.startingAt}</span>
+                <span className="text-sm font-heading font-semibold">₦{creator.startingAt.toLocaleString()}</span>
               </div>
             </motion.div>
           ))}
