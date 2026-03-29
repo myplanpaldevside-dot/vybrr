@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { AuthOrbitBackground } from "@/components/AuthOrbitBackground";
 import vybrrLogo from "@/assets/vybrr-logo.png";
 
 export default function Login() {
@@ -31,9 +32,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
       <PageMeta title="Log In" />
-      <div className="w-full max-w-md space-y-8">
+      <AuthOrbitBackground />
+
+      <div className="w-full max-w-md space-y-8 relative z-10">
         <div className="text-center">
           <Link to="/">
             <img src={vybrrLogo} alt="Vybrr" className="h-10 mx-auto mb-6" />
@@ -42,7 +45,7 @@ export default function Login() {
           <p className="text-muted-foreground mt-2">Sign in to your Vybrr account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 glass-card p-6">
           <div>
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />

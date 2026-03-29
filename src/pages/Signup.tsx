@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { AuthOrbitBackground } from "@/components/AuthOrbitBackground";
 import vybrrLogo from "@/assets/vybrr-logo.png";
 
 export default function Signup() {
@@ -32,9 +33,11 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
       <PageMeta title="Sign Up" description="Join Vybrr and start creating or hiring world-class digital creators." />
-      <div className="w-full max-w-md space-y-8">
+      <AuthOrbitBackground />
+
+      <div className="w-full max-w-md space-y-8 relative z-10">
         <div className="text-center">
           <Link to="/">
             <img src={vybrrLogo} alt="Vybrr" className="h-10 mx-auto mb-6" />
@@ -43,7 +46,7 @@ export default function Signup() {
           <p className="text-muted-foreground mt-2">Join Vybrr and start creating</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 glass-card p-6">
           <div>
             <Label htmlFor="displayName">Display name</Label>
             <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required placeholder="Your name" />
