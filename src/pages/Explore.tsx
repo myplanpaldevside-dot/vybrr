@@ -45,6 +45,7 @@ export default function Explore() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta title="Explore Creators" description="Discover talented digital creators for your next project on Vybrr. Browse designers, editors, musicians, and more." />
       <Navbar />
       <div className="container pt-24 pb-16 px-4">
         <div className="mb-8">
