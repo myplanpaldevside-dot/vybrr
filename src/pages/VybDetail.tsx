@@ -89,6 +89,7 @@ export default function VybDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta title={vyb.title} description={vyb.description || `Book ${vyb.title} on Vybrr.`} />
       <Navbar />
       <div className="container pt-24 pb-16 px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

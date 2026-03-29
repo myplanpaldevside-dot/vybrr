@@ -103,6 +103,7 @@ export default function CreateVyb() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta title="Create a Vyb" />
       <Navbar />
       <div className="container pt-24 pb-16 px-4 max-w-2xl">
         <h1 className="text-2xl font-heading font-bold mb-2">Create a Vyb</h1>

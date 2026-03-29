@@ -79,6 +79,7 @@ export default function OrderDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta title={`Order: ${(order as any).vybs?.title || "Details"}`} />
       <Navbar />
       <div className="container pt-24 pb-16 px-4 max-w-3xl">
         <div className="glass-card p-6 mb-6">

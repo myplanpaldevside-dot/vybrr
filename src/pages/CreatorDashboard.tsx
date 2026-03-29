@@ -56,6 +56,7 @@ export default function CreatorDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageMeta title="Creator Dashboard" />
       <Navbar />
       <div className="container pt-24 pb-16 px-4">
         <div className="flex items-center justify-between mb-8">
