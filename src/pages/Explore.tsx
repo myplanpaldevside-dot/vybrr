@@ -30,7 +30,8 @@ export default function Explore() {
         .eq("is_published", true);
 
       if (categoryFilter !== "all") {
-        query = query.eq("categories.slug", categoryFilter);
+        const cat = categories?.find((c) => c.slug === categoryFilter);
+        if (cat) query = query.eq("category_id", cat.id);
       }
       if (search) {
         query = query.ilike("title", `%${search}%`);
@@ -122,7 +123,8 @@ export default function Explore() {
         ) : (
           <div className="text-center py-20">
             <h3 className="text-lg font-heading font-semibold mb-2">No Vybs found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filters</p>
+            <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
+            <Button asChild><Link to="/explore">Browse all</Link></Button>
           </div>
         )}
       </div>
