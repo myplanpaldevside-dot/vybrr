@@ -13,7 +13,7 @@ const categories = [
 
 export function CategoryBrowser() {
   return (
-    <section id="categories" className="py-24 relative">
+    <section id="categories" className="py-24 bg-muted/30">
       <div className="container px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -39,8 +39,8 @@ export function CategoryBrowser() {
               transition={{ delay: i * 0.05 }}
               className="glass-card-hover p-5 flex flex-col items-center gap-3 text-center group"
             >
-              <div className="w-12 h-12 rounded-xl bg-violet/10 flex items-center justify-center group-hover:bg-violet/20 transition-colors">
-                <cat.icon size={22} className="text-violet" />
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <cat.icon size={22} className="text-primary" />
               </div>
               <div>
                 <h3 className="font-heading font-semibold text-sm">{cat.name}</h3>

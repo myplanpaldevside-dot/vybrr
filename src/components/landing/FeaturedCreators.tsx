@@ -69,7 +69,7 @@ export function FeaturedCreators() {
                 <img
                   src={creator.avatar}
                   alt={creator.name}
-                  className="w-12 h-12 rounded-full object-cover ring-2 ring-violet/30"
+                  className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20"
                 />
                 <div>
                   <h3 className="font-heading font-semibold text-sm">{creator.name}</h3>
@@ -79,17 +79,17 @@ export function FeaturedCreators() {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
-                  <Star size={14} className="fill-amber text-amber" />
+                  <Star size={14} className="fill-accent text-accent" />
                   <span className="text-sm font-medium">{creator.rating}</span>
                 </div>
-                <Badge variant="secondary" className="text-xs bg-surface-elevated border-none">
+                <Badge variant="secondary" className="text-xs">
                   {creator.level}
                 </Badge>
               </div>
 
               <div className="mt-3 pt-3 border-t border-border/50">
                 <span className="text-xs text-muted-foreground">Starting at </span>
-                <span className="text-sm font-heading font-semibold text-foreground">${creator.startingAt}</span>
+                <span className="text-sm font-heading font-semibold">${creator.startingAt}</span>
               </div>
             </motion.div>
           ))}
