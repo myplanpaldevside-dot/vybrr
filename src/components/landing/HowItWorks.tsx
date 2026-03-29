@@ -47,12 +47,11 @@ export function HowItWorks() {
               transition={{ delay: i * 0.15 }}
               className="text-center relative"
             >
-              <div className="w-16 h-16 rounded-2xl bg-violet/10 border border-violet/20 flex items-center justify-center mx-auto mb-5">
-                <step.icon size={28} className="text-violet" />
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-5">
+                <step.icon size={28} className="text-primary" />
               </div>
 
-              {/* Step number */}
-              <div className="absolute top-0 right-1/2 translate-x-[3.5rem] -translate-y-2 text-xs font-heading font-bold text-violet/60 bg-background px-2">
+              <div className="absolute top-0 right-1/2 translate-x-[3.5rem] -translate-y-2 text-xs font-heading font-bold text-primary/60 bg-background px-2">
                 {String(i + 1).padStart(2, "0")}
               </div>
 

@@ -6,22 +6,22 @@
 
 @layer base {
   :root {
-    --background: 225 25% 6%;
-    --foreground: 240 10% 96%;
+    --background: 0 0% 100%;
+    --foreground: 225 25% 8%;
 
-    --card: 224 22% 11%;
-    --card-foreground: 240 10% 96%;
+    --card: 0 0% 100%;
+    --card-foreground: 225 25% 8%;
 
-    --popover: 224 22% 11%;
-    --popover-foreground: 240 10% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 25% 8%;
 
     --primary: 254 96% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 224 22% 14%;
-    --secondary-foreground: 240 10% 96%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 225 25% 8%;
 
-    --muted: 224 18% 16%;
+    --muted: 240 5% 96%;
     --muted-foreground: 220 9% 46%;
 
     --accent: 36 91% 55%;
@@ -30,19 +30,19 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 224 18% 18%;
-    --input: 224 18% 18%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
     --ring: 254 96% 67%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 224 22% 8%;
-    --sidebar-foreground: 240 10% 96%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 225 25% 8%;
     --sidebar-primary: 254 96% 67%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 224 22% 14%;
-    --sidebar-accent-foreground: 240 10% 96%;
-    --sidebar-border: 224 18% 18%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 225 25% 8%;
+    --sidebar-border: 220 13% 91%;
     --sidebar-ring: 254 96% 67%;
 
     /* Custom tokens */
@@ -50,9 +50,9 @@
     --violet-glow: 254 96% 75%;
     --amber: 36 91% 55%;
     --amber-glow: 36 91% 65%;
-    --surface: 224 22% 11%;
-    --surface-elevated: 224 22% 14%;
-    --glass-border: 254 50% 40%;
+    --surface: 240 5% 97%;
+    --surface-elevated: 240 5% 93%;
+    --glass-border: 220 13% 85%;
   }
 }
 
@@ -72,11 +72,11 @@
 
 @layer utilities {
   .glass-card {
-    @apply bg-surface/60 backdrop-blur-xl border border-glass-border/20 rounded-xl;
+    @apply bg-card/80 backdrop-blur-xl border border-glass-border/40 rounded-xl shadow-sm;
   }
 
   .glass-card-hover {
-    @apply glass-card transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_32px_rgba(124,92,252,0.15)] hover:border-glass-border/40;
+    @apply glass-card transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/30;
   }
 
   .gradient-text {
@@ -85,9 +85,9 @@
 
   .gradient-mesh {
     background: 
-      radial-gradient(ellipse 80% 50% at 20% 40%, hsl(254 96% 67% / 0.15), transparent),
-      radial-gradient(ellipse 60% 40% at 80% 20%, hsl(254 80% 55% / 0.1), transparent),
-      radial-gradient(ellipse 40% 60% at 60% 80%, hsl(280 60% 50% / 0.08), transparent);
+      radial-gradient(ellipse 80% 50% at 20% 40%, hsl(254 96% 67% / 0.06), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 20%, hsl(254 80% 55% / 0.04), transparent),
+      radial-gradient(ellipse 40% 60% at 60% 80%, hsl(280 60% 50% / 0.03), transparent);
   }
 
   .text-balance {

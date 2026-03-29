@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import vybrrLogo from "@/assets/vybrr-logo.png";
 
 const footerLinks = {
   Platform: ["Explore", "How it works", "Pricing", "Categories"],
@@ -8,12 +9,11 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/50 bg-background">
+    <footer className="border-t border-border/50 bg-muted/30">
       <div className="container px-4 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
-          {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <img src="/vybrr-logo.svg" alt="Vybrr" className="h-8 mb-4" />
+            <img src={vybrrLogo} alt="Vybrr" className="h-8 mb-4" />
             <p className="text-sm text-muted-foreground leading-relaxed">
               Where creativity connects. The marketplace for digital creators and the clients who need them.
             </p>
@@ -25,12 +25,7 @@ export function Footer() {
               <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link}>
-                    <Link
-                      to="#"
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {link}
-                    </Link>
+                    <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{link}</Link>
                   </li>
                 ))}
               </ul>
