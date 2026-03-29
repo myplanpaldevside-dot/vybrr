@@ -2,69 +2,84 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { CreatorOrbit } from "./CreatorOrbit";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-16">
+    <section className="relative min-h-screen overflow-hidden pt-16">
       <div className="absolute inset-0 gradient-mesh" />
 
-      <div className="container relative z-10 text-center px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="max-w-4xl mx-auto"
-        >
+      <div className="container relative z-10 px-4 py-12 lg:py-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-4 items-center min-h-[calc(100vh-4rem)]">
+          {/* Left: Copy */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-sm text-primary mb-8"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="max-w-xl"
           >
-            <Sparkles size={14} />
-            <span>The creator marketplace for the bold</span>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-sm text-primary mb-6"
+            >
+              <Sparkles size={14} />
+              <span>The creator marketplace for the bold</span>
+            </motion.div>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-extrabold leading-[1.08] tracking-tight mb-5 text-balance">
+              Where creativity{" "}
+              <span className="gradient-text">connects.</span>
+            </h1>
+
+            <p className="text-lg text-muted-foreground max-w-md mb-8 text-balance leading-relaxed">
+              Hire world-class digital creators or showcase your work and get paid.
+              Designers, editors, musicians, developers, all in one vibe.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-start gap-4 mb-12">
+              <Button size="lg" className="text-base px-8 h-12 gap-2" asChild>
+                <Link to="/explore">
+                  Find a Creator
+                  <ArrowRight size={18} />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="text-base px-8 h-12" asChild>
+                <Link to="/signup">Start Creating</Link>
+              </Button>
+            </div>
+
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="flex gap-8 sm:gap-12"
+            >
+              {[
+                { value: "12K+", label: "Creators" },
+                { value: "85K+", label: "Orders" },
+                { value: "140+", label: "Countries" },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <div className="text-2xl font-heading font-bold">{stat.value}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+                </div>
+              ))}
+            </motion.div>
           </motion.div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-extrabold leading-[1.1] tracking-tight mb-6 text-balance">
-            Where creativity{" "}
-            <span className="gradient-text">connects.</span>
-          </h1>
-
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 text-balance">
-            Hire world-class digital creators or showcase your work and get paid.
-            Designers, editors, musicians, developers, all in one vibe.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="text-base px-8 h-12 gap-2" asChild>
-              <Link to="/explore">
-                Find a Creator
-                <ArrowRight size={18} />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-base px-8 h-12" asChild>
-              <Link to="/signup">Start Creating</Link>
-            </Button>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-          className="mt-20 flex flex-wrap justify-center gap-8 sm:gap-16"
-        >
-          {[
-            { value: "12K+", label: "Creators" },
-            { value: "85K+", label: "Orders completed" },
-            { value: "140+", label: "Countries" },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl sm:text-3xl font-heading font-bold">{stat.value}</div>
-              <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
+          {/* Right: Orbital animation */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+            className="relative flex items-center justify-center lg:justify-end"
+          >
+            <CreatorOrbit />
+          </motion.div>
+        </div>
       </div>
     </section>
   );
