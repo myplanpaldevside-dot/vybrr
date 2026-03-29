@@ -50,7 +50,7 @@ export default function CreatorDashboard() {
   const pendingEarnings = orders?.filter((o: any) => ["in_progress", "delivered", "pending"].includes(o.status)).reduce((sum: number, o: any) => sum + Number(o.amount), 0) || 0;
 
   const updateStatus = async (orderId: string, status: string) => {
-    await supabase.from("orders").update({ status }).eq("id", orderId);
+    await supabase.from("orders").update({ status: status as any }).eq("id", orderId);
   };
 
   return (
