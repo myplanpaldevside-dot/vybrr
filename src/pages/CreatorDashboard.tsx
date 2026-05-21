@@ -10,8 +10,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { DollarSign, Package, TrendingUp, Plus, Clock, Banknote, CheckCircle2, AlertCircle } from "lucide-react";
+
+const NIGERIAN_BANKS = [
+  { name: "Access Bank", code: "044" },
+  { name: "Citibank", code: "023" },
+  { name: "Ecobank", code: "050" },
+  { name: "Fidelity Bank", code: "070" },
+  { name: "First Bank", code: "011" },
+  { name: "FCMB", code: "214" },
+  { name: "GTBank", code: "058" },
+  { name: "Heritage Bank", code: "030" },
+  { name: "Keystone Bank", code: "082" },
+  { name: "Kuda Microfinance Bank", code: "50211" },
+  { name: "Moniepoint", code: "50515" },
+  { name: "OPay", code: "100004" },
+  { name: "PalmPay", code: "999991" },
+  { name: "Polaris Bank", code: "076" },
+  { name: "Providus Bank", code: "101" },
+  { name: "Stanbic IBTC", code: "221" },
+  { name: "Sterling Bank", code: "232" },
+  { name: "Union Bank", code: "032" },
+  { name: "UBA", code: "033" },
+  { name: "Unity Bank", code: "215" },
+  { name: "Wema Bank", code: "035" },
+  { name: "Zenith Bank", code: "057" },
+];
 
 const statusColors: Record<string, string> = {
   pending: "bg-muted text-muted-foreground",
@@ -37,7 +63,7 @@ export default function CreatorDashboard() {
 
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [bankName, setBankName] = useState("");
+  const [selectedBank, setSelectedBank] = useState<{ name: string; code: string } | null>(null);
   const [accountNumber, setAccountNumber] = useState("");
   const [accountName, setAccountName] = useState("");
   const [withdrawing, setWithdrawing] = useState(false);
@@ -98,34 +124,49 @@ export default function CreatorDashboard() {
   const submitWithdrawal = async () => {
     if (!profile) return;
     const amount = parseFloat(withdrawAmount);
-    if (!amount || amount <= 0) {
-      toast({ title: "Invalid amount", variant: "destructive" });
+    if (!amount || amount < 1000) {
+      toast({ title: "Minimum withdrawal is ₦1,000", variant: "destructive" });
       return;
     }
     if (amount > availableBalance) {
       toast({ title: "Insufficient balance", description: `Available: ₦${availableBalance.toLocaleString()}`, variant: "destructive" });
       return;
     }
-    if (!bankName || !accountNumber || !accountName) {
+    if (!selectedBank || !accountNumber || !accountName) {
       toast({ title: "Please fill in all bank details", variant: "destructive" });
       return;
     }
 
     setWithdrawing(true);
     try {
-      const { error } = await supabase.from("withdrawals").insert({
-        creator_id: profile.id,
-        amount,
-        bank_name: bankName,
-        account_number: accountNumber,
-        account_name: accountName,
-        status: "pending",
-      });
-      if (error) throw error;
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paystack-transfer`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({
+            amount,
+            bank_code: selectedBank.code,
+            bank_name: selectedBank.name,
+            account_number: accountNumber,
+            account_name: accountName,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "Transfer failed");
+
       queryClient.invalidateQueries({ queryKey: ["withdrawals", profile.id] });
-      toast({ title: "Withdrawal requested!", description: "We'll process your payment within 1–3 business days." });
+      toast({ title: "Withdrawal initiated!", description: "Your transfer is being processed via Paystack." });
       setShowWithdrawDialog(false);
       setWithdrawAmount("");
+      setSelectedBank(null);
+      setAccountNumber("");
+      setAccountName("");
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -292,8 +333,17 @@ export default function CreatorDashboard() {
               </button>
             </div>
             <div>
-              <Label>Bank Name</Label>
-              <Input value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. GTBank, Access Bank" />
+              <Label>Bank</Label>
+              <Select onValueChange={(code) => setSelectedBank(NIGERIAN_BANKS.find(b => b.code === code) || null)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your bank" />
+                </SelectTrigger>
+                <SelectContent>
+                  {NIGERIAN_BANKS.map((bank) => (
+                    <SelectItem key={bank.code} value={bank.code}>{bank.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Account Number</Label>
@@ -305,11 +355,11 @@ export default function CreatorDashboard() {
             </div>
 
             <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-              Withdrawals are processed within 1–3 business days. Minimum withdrawal is ₦1,000.
+              Withdrawals are processed instantly via Paystack. Minimum withdrawal is ₦1,000.
             </div>
 
-            <Button onClick={submitWithdrawal} disabled={withdrawing || !withdrawAmount || !bankName || !accountNumber || !accountName} className="w-full">
-              {withdrawing ? "Submitting..." : `Request ₦${Number(withdrawAmount || 0).toLocaleString()} withdrawal`}
+            <Button onClick={submitWithdrawal} disabled={withdrawing || !withdrawAmount || !selectedBank || !accountNumber || !accountName} className="w-full">
+              {withdrawing ? "Processing..." : `Withdraw ₦${Number(withdrawAmount || 0).toLocaleString()}`}
             </Button>
           </div>
         </DialogContent>

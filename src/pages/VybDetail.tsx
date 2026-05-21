@@ -4,6 +4,7 @@ import { PageMeta } from "@/components/PageMeta";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePaystack } from "@/hooks/usePaystack";
 import { Navbar } from "@/components/landing/Navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ export default function VybDetail() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { openPayment } = usePaystack();
   const [selectedTier, setSelectedTier] = useState<any>(null);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [requirements, setRequirements] = useState("");
@@ -34,7 +36,32 @@ export default function VybDetail() {
     },
   });
 
-  const handleOrder = async () => {
+  const createOrderAfterPayment = async (paymentReference: string) => {
+    if (!profile || !selectedTier || !vyb) return;
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + selectedTier.delivery_days);
+    const { error } = await supabase.from("orders").insert({
+      client_id: profile.id,
+      creator_id: (vyb as any).profiles.id,
+      vyb_id: vyb.id,
+      tier_id: selectedTier.id,
+      amount: selectedTier.price,
+      requirements,
+      delivery_date: deliveryDate.toISOString(),
+      status: "pending",
+      payment_reference: paymentReference,
+      payment_status: "success",
+    });
+    if (error) {
+      toast({ title: "Payment received but order failed", description: "Contact support with reference: " + paymentReference, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Vyb booked!", description: "Payment confirmed. Your order is placed." });
+    setShowOrderDialog(false);
+    navigate("/dashboard/client");
+  };
+
+  const handleOrder = () => {
     if (!user) {
       navigate("/login");
       return;
@@ -42,30 +69,21 @@ export default function VybDetail() {
     if (!profile || !selectedTier || !vyb) return;
 
     setOrdering(true);
-    try {
-      const deliveryDate = new Date();
-      deliveryDate.setDate(deliveryDate.getDate() + selectedTier.delivery_days);
-
-      const { error } = await supabase.from("orders").insert({
-        client_id: profile.id,
-        creator_id: (vyb as any).profiles.id,
-        vyb_id: vyb.id,
-        tier_id: selectedTier.id,
-        amount: selectedTier.price,
-        requirements,
-        delivery_date: deliveryDate.toISOString(),
-        status: "pending",
-      });
-
-      if (error) throw error;
-      toast({ title: "Vyb booked!", description: "Your order has been placed successfully." });
-      setShowOrderDialog(false);
-      navigate("/dashboard/client");
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
-      setOrdering(false);
-    }
+    const ref = `vybrr_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    openPayment({
+      email: user.email!,
+      amount: Math.round(Number(selectedTier.price) * 100),
+      ref,
+      metadata: { vyb_id: vyb.id, tier_id: selectedTier.id, client_id: profile.id },
+      onSuccess: async (reference) => {
+        await createOrderAfterPayment(reference);
+        setOrdering(false);
+      },
+      onClose: () => {
+        setOrdering(false);
+        toast({ title: "Payment cancelled", description: "No charge was made.", variant: "destructive" });
+      },
+    });
   };
 
   if (isLoading) return (

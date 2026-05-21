@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthOrbitBackground } from "@/components/AuthOrbitBackground";
+import { Eye, EyeOff } from "lucide-react";
 import vybrrLogo from "@/assets/vybrr-logo.png";
 
 function GoogleIcon() {
@@ -21,19 +22,13 @@ function GoogleIcon() {
   );
 }
 
-function AppleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-      <path d="M14.4 9.54c-.02-2.07 1.69-3.07 1.77-3.12-1.02-1.44-2.55-1.62-3.09-1.63-1.3-.13-2.54.75-3.21.75-.66 0-1.69-.74-2.78-.72-1.42.02-2.74.83-3.47 2.09C2.2 9.33 3.2 13.18 4.7 15.28c.75 1.06 1.63 2.25 2.8 2.21 1.12-.04 1.55-.7 2.9-.7 1.35 0 1.74.7 2.92.68 1.2-.02 1.97-1.07 2.71-2.14.86-1.22 1.21-2.41 1.22-2.47-.03-.01-2.34-.88-2.35-3.32zM12.14 3.3c.59-.73.99-1.74.88-2.75-.85.04-1.9.58-2.51 1.3-.55.63-1.04 1.64-.91 2.61.95.07 1.94-.47 2.54-1.16z"/>
-    </svg>
-  );
-}
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"google" | "apple" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [showReset, setShowReset] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
@@ -55,17 +50,17 @@ export default function Login() {
     }
   };
 
-  const handleOAuth = async (provider: "google" | "apple") => {
-    setOauthLoading(provider);
+  const handleGoogleSignIn = async () => {
+    setOauthLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: "google",
         options: { redirectTo: `${window.location.origin}/dashboard` },
       });
       if (error) throw error;
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
-      setOauthLoading(null);
+      setOauthLoading(false);
     }
   };
 
@@ -120,26 +115,15 @@ export default function Login() {
         ) : (
           <div className="space-y-4">
             {/* OAuth buttons */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="w-full gap-2"
-                onClick={() => handleOAuth("google")}
-                disabled={!!oauthLoading}
-              >
-                <GoogleIcon />
-                {oauthLoading === "google" ? "..." : "Google"}
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full gap-2"
-                onClick={() => handleOAuth("apple")}
-                disabled={!!oauthLoading}
-              >
-                <AppleIcon />
-                {oauthLoading === "apple" ? "..." : "Apple"}
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={handleGoogleSignIn}
+              disabled={oauthLoading}
+            >
+              <GoogleIcon />
+              {oauthLoading ? "Connecting..." : "Continue with Google"}
+            </Button>
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
@@ -160,7 +144,12 @@ export default function Login() {
                     Forgot password?
                   </button>
                 </div>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Your password" />
+                <div className="relative">
+                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Your password" className="pr-10" />
+                  <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Signing in..." : "Sign in"}
