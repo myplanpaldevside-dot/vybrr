@@ -18,7 +18,10 @@ export default function Dashboard() {
     }
     if (profile.role === "client") {
       navigate("/dashboard/client");
+    } else if (profile.role === "creator") {
+      navigate("/dashboard/creator");
     } else {
+      // "both" — default to creator dashboard; they can switch from there
       navigate("/dashboard/creator");
     }
   }, [profile, loading, navigate]);

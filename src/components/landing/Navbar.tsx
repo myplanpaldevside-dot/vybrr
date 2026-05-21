@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Bell, LogOut, LayoutDashboard, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import vybrrLogo from "@/assets/vybrr-logo.png";
 
@@ -11,13 +13,41 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { data: notifications } = useQuery({
+    queryKey: ["notifications", profile?.id],
+    enabled: !!profile?.id,
+    refetchInterval: 30000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", profile!.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      return data || [];
+    },
+  });
+
+  const unreadCount = notifications?.filter((n: any) => !n.is_read).length || 0;
+
+  const markAllRead = async () => {
+    if (!profile || unreadCount === 0) return;
+    await supabase.from("notifications").update({ is_read: true }).eq("user_id", profile.id).eq("is_read", false);
+    queryClient.invalidateQueries({ queryKey: ["notifications", profile.id] });
+  };
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
   };
 
-  const dashboardPath = profile?.role === "client" ? "/dashboard/client" : "/dashboard/creator";
+  const dashboardPath = profile?.role === "client"
+    ? "/dashboard/client"
+    : profile?.role === "both"
+    ? "/dashboard/creator"
+    : "/dashboard/creator";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -40,6 +70,42 @@ export function Navbar() {
                   <LayoutDashboard size={16} className="mr-1" /> Dashboard
                 </Link>
               </Button>
+
+              {/* Notifications */}
+              <DropdownMenu onOpenChange={(open) => open && markAllRead()}>
+                <DropdownMenuTrigger asChild>
+                  <button className="relative p-2 rounded-full hover:bg-muted transition-colors">
+                    <Bell size={18} />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+                  <div className="px-3 py-2 border-b border-border">
+                    <p className="text-sm font-medium">Notifications</p>
+                  </div>
+                  {notifications && notifications.length > 0 ? (
+                    notifications.map((n: any) => (
+                      <DropdownMenuItem
+                        key={n.id}
+                        className={`flex flex-col items-start gap-0.5 p-3 cursor-pointer ${!n.is_read ? "bg-primary/5" : ""}`}
+                        onClick={() => n.link && navigate(n.link)}
+                      >
+                        <span className="text-sm font-medium">{n.title}</span>
+                        {n.message && <span className="text-xs text-muted-foreground">{n.message}</span>}
+                        <span className="text-[10px] text-muted-foreground mt-0.5">{new Date(n.created_at).toLocaleDateString()}</span>
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-sm text-muted-foreground">No notifications</div>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Avatar dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 rounded-full ring-2 ring-border hover:ring-primary/50 transition-all">
@@ -64,6 +130,9 @@ export function Navbar() {
                       <User size={14} className="mr-2" /> My Profile
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <User size={14} className="mr-2" /> Settings
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut size={14} className="mr-2" /> Sign out
@@ -102,6 +171,7 @@ export function Navbar() {
               {user ? (
                 <>
                   <Link to={dashboardPath} className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+                  <Link to="/settings" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Settings</Link>
                   <button onClick={() => { handleSignOut(); setMobileOpen(false); }} className="text-sm text-destructive text-left">Sign out</button>
                 </>
               ) : (

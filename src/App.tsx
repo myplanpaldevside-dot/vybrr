@@ -18,6 +18,8 @@ import Dashboard from "./pages/Dashboard";
 import ClientDashboard from "./pages/ClientDashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import CreateVyb from "./pages/CreateVyb";
+import EditVyb from "./pages/EditVyb";
+import Settings from "./pages/Settings";
 import OrderDetail from "./pages/OrderDetail";
 
 const queryClient = new QueryClient();
@@ -46,7 +48,9 @@ const App = () => {
               <Route path="/dashboard/client" element={<ClientDashboard />} />
               <Route path="/dashboard/creator" element={<CreatorDashboard />} />
               <Route path="/dashboard/creator/vybs/new" element={<CreateVyb />} />
+              <Route path="/dashboard/creator/vybs/:id/edit" element={<EditVyb />} />
               <Route path="/order/:id" element={<OrderDetail />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

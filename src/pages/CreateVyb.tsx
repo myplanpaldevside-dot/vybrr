@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { X } from "lucide-react";
+import { X, ImagePlus } from "lucide-react";
 
 export default function CreateVyb() {
   const { profile } = useAuth();
@@ -34,6 +34,9 @@ export default function CreateVyb() {
     { name: "Standard", price: "", description: "", delivery_days: "5", revision_count: "3", features: [] as string[] },
     { name: "Premium", price: "", description: "", delivery_days: "3", revision_count: "5", features: [] as string[] },
   ]);
+  // Step 4
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -54,6 +57,17 @@ export default function CreateVyb() {
     const updated = [...tiers];
     (updated[index] as any)[field] = value;
     setTiers(updated);
+  };
+
+  const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).slice(0, 5);
+    setMediaFiles(files);
+    setMediaPreviews(files.map((f) => URL.createObjectURL(f)));
+  };
+
+  const removeMedia = (index: number) => {
+    setMediaFiles((prev) => prev.filter((_, i) => i !== index));
+    setMediaPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handlePublish = async () => {
@@ -92,6 +106,22 @@ export default function CreateVyb() {
         if (tierError) throw tierError;
       }
 
+      // Upload media files
+      for (let i = 0; i < mediaFiles.length; i++) {
+        const file = mediaFiles[i];
+        const ext = file.name.split(".").pop();
+        const path = `${vyb.id}/${i}.${ext}`;
+        const { error: uploadError } = await supabase.storage.from("vyb-media").upload(path, file, { upsert: true });
+        if (uploadError) continue;
+        const { data: urlData } = supabase.storage.from("vyb-media").getPublicUrl(path);
+        await supabase.from("vyb_media").insert({
+          vyb_id: vyb.id,
+          url: urlData.publicUrl,
+          type: file.type.startsWith("video") ? "video" : "image",
+          position: i,
+        });
+      }
+
       toast({ title: "Vyb published!", description: "Your Vyb is now live on Vybrr." });
       navigate("/dashboard/creator");
     } catch (error: any) {
@@ -101,16 +131,18 @@ export default function CreateVyb() {
     }
   };
 
+  const totalSteps = 4;
+
   return (
     <div className="min-h-screen bg-background">
       <PageMeta title="Create a Vyb" />
       <Navbar />
       <div className="container pt-24 pb-16 px-4 max-w-2xl">
         <h1 className="text-2xl font-heading font-bold mb-2">Create a Vyb</h1>
-        <p className="text-muted-foreground mb-6">Step {step} of 3</p>
+        <p className="text-muted-foreground mb-6">Step {step} of {totalSteps}</p>
         <div className="flex gap-2 mb-8">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className={`h-1.5 flex-1 rounded-full ${s <= step ? "bg-primary" : "bg-muted"}`} />
+          {Array.from({ length: totalSteps }).map((_, s) => (
+            <div key={s} className={`h-1.5 flex-1 rounded-full ${s + 1 <= step ? "bg-primary" : "bg-muted"}`} />
           ))}
         </div>
 
@@ -186,7 +218,42 @@ export default function CreateVyb() {
             ))}
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
-              <Button onClick={handlePublish} disabled={loading || !tiers.some((t) => t.price)}>
+              <Button onClick={() => setStep(4)} disabled={!tiers.some((t) => t.price)}>Continue</Button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-6">
+            <h2 className="text-lg font-heading font-semibold">Portfolio Media</h2>
+            <p className="text-sm text-muted-foreground">Add up to 5 images or videos to showcase your work. This is optional but highly recommended.</p>
+
+            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 transition-colors">
+              <ImagePlus size={32} className="text-muted-foreground mb-2" />
+              <span className="text-sm text-muted-foreground">Click to upload images or videos</span>
+              <span className="text-xs text-muted-foreground mt-1">PNG, JPG, GIF, MP4 up to 50MB each</span>
+              <input type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleMediaChange} />
+            </label>
+
+            {mediaPreviews.length > 0 && (
+              <div className="grid grid-cols-3 gap-3">
+                {mediaPreviews.map((preview, i) => (
+                  <div key={i} className="relative group rounded-lg overflow-hidden aspect-square">
+                    <img src={preview} alt="" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => removeMedia(i)}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setStep(3)}>Back</Button>
+              <Button onClick={handlePublish} disabled={loading}>
                 {loading ? "Publishing..." : "Publish Vyb"}
               </Button>
             </div>
