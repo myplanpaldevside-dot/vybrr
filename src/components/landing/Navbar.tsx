@@ -7,7 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import vybrrLogo from "@/assets/vybrr-logo.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { VybrrLogo } from "@/components/VybrrLogo";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -52,8 +53,8 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={vybrrLogo} alt="Vybrr" className="h-10" />
+        <Link to="/">
+          <VybrrLogo />
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -63,6 +64,7 @@ export function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle />
           {user ? (
             <>
               <Button variant="ghost" size="sm" asChild>
@@ -166,6 +168,10 @@ export function Navbar() {
             className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl"
           >
             <div className="container py-4 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Theme</span>
+                <ThemeToggle />
+              </div>
               <Link to="/explore" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Explore</Link>
               <a href="/#how-it-works" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>How it works</a>
               {user ? (

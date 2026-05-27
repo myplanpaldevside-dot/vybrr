@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { PageMeta } from "@/components/PageMeta";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,7 +12,10 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { DollarSign, Package, TrendingUp, Plus, Clock, Banknote, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  DollarSign, Package, TrendingUp, Plus, Clock, Banknote,
+  CheckCircle2, AlertCircle, MessageCircle, ArrowDownCircle, Loader2,
+} from "lucide-react";
 
 const NIGERIAN_BANKS = [
   { name: "Access Bank", code: "044" },
@@ -43,15 +46,15 @@ const statusColors: Record<string, string> = {
   pending: "bg-muted text-muted-foreground",
   in_progress: "bg-primary/10 text-primary",
   delivered: "bg-accent/10 text-accent",
-  completed: "bg-green-100 text-green-700",
-  revision_requested: "bg-orange-100 text-orange-700",
+  completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  revision_requested: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
 };
 
 const withdrawalStatusColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700",
-  processing: "bg-blue-100 text-blue-700",
-  completed: "bg-green-100 text-green-700",
-  failed: "bg-red-100 text-red-700",
+  pending: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+  processing: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  failed: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 };
 
 export default function CreatorDashboard() {
@@ -66,6 +69,8 @@ export default function CreatorDashboard() {
   const [selectedBank, setSelectedBank] = useState<{ name: string; code: string } | null>(null);
   const [accountNumber, setAccountNumber] = useState("");
   const [accountName, setAccountName] = useState("");
+  const [resolvingAccount, setResolvingAccount] = useState(false);
+  const [resolveError, setResolveError] = useState("");
   const [withdrawing, setWithdrawing] = useState(false);
 
   const { data: orders } = useQuery({
@@ -107,10 +112,54 @@ export default function CreatorDashboard() {
     },
   });
 
-  const totalEarned = orders?.filter((o: any) => o.status === "completed").reduce((sum: number, o: any) => sum + Number(o.amount), 0) || 0;
-  const pendingEarnings = orders?.filter((o: any) => ["in_progress", "delivered", "pending"].includes(o.status)).reduce((sum: number, o: any) => sum + Number(o.amount), 0) || 0;
-  const totalWithdrawn = withdrawals?.filter((w: any) => w.status === "completed").reduce((sum: number, w: any) => sum + Number(w.amount), 0) || 0;
-  const availableBalance = totalEarned - totalWithdrawn;
+  // Creator earnings = 90% of order amount (10% is Vybrr platform commission)
+  const netEarnings = (o: any) => Number(o.creator_earnings ?? (Number(o.amount) * 0.9));
+  // All-time gross earnings (for the Total Received display)
+  const totalReceived = orders?.reduce((sum: number, o: any) => sum + netEarnings(o), 0) || 0;
+  // Only orders that are still active (funds not yet released)
+  const pendingEarnings = orders?.filter((o: any) => ["pending", "in_progress", "delivered", "revision_requested"].includes(o.status)).reduce((sum: number, o: any) => sum + netEarnings(o), 0) || 0;
+  // Only completed orders can be withdrawn
+  const completedEarnings = orders?.filter((o: any) => o.status === "completed").reduce((sum: number, o: any) => sum + netEarnings(o), 0) || 0;
+  const totalWithdrawn = withdrawals?.filter((w: any) => ["completed", "processing"].includes(w.status)).reduce((sum: number, w: any) => sum + Number(w.amount), 0) || 0;
+  const availableBalance = Math.max(0, completedEarnings - totalWithdrawn);
+
+  // Auto-resolve account name when account number is 10 digits and a bank is selected
+  useEffect(() => {
+    if (accountNumber.length !== 10 || !selectedBank) {
+      setResolveError("");
+      return;
+    }
+    let cancelled = false;
+    const resolve = async () => {
+      setResolvingAccount(true);
+      setAccountName("");
+      setResolveError("");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paystack-resolve-account`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session?.access_token}`,
+            },
+            body: JSON.stringify({ account_number: accountNumber, bank_code: selectedBank.code }),
+          }
+        );
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.error) throw new Error(data.error);
+        setAccountName(data.account_name);
+      } catch (err: any) {
+        if (!cancelled) setResolveError(err.message || "Could not verify account — enter name manually");
+      } finally {
+        if (!cancelled) setResolvingAccount(false);
+      }
+    };
+    resolve();
+    return () => { cancelled = true; };
+  }, [accountNumber, selectedBank]);
 
   const updateStatus = async (orderId: string, status: string) => {
     const { error } = await supabase.from("orders").update({ status: status as any }).eq("id", orderId);
@@ -174,6 +223,8 @@ export default function CreatorDashboard() {
     }
   };
 
+  const recentPayments = orders?.slice(0, 5) || [];
+
   return (
     <div className="min-h-screen bg-background">
       <PageMeta title="Creator Dashboard" />
@@ -185,6 +236,7 @@ export default function CreatorDashboard() {
             <button className="px-4 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => navigate("/dashboard/client")}>Client</button>
           </div>
         )}
+
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-heading font-bold">Creator Dashboard</h1>
           <Button onClick={() => navigate("/dashboard/creator/vybs/new")}>
@@ -195,38 +247,91 @@ export default function CreatorDashboard() {
         {/* Earnings Overview */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="glass-card p-5">
-            <div className="flex items-center gap-2 text-accent mb-2"><DollarSign size={18} /> Total Earned</div>
-            <div className="text-2xl font-heading font-bold">₦{totalEarned.toLocaleString()}</div>
+            <div className="flex items-center gap-2 text-accent mb-2"><DollarSign size={18} /> Total Received</div>
+            <div className="text-2xl font-heading font-bold">₦{totalReceived.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground mt-1">{orders?.length || 0} order{orders?.length !== 1 ? "s" : ""}</p>
           </div>
           <div className="glass-card p-5">
-            <div className="flex items-center gap-2 text-primary mb-2"><TrendingUp size={18} /> Pending</div>
+            <div className="flex items-center gap-2 text-primary mb-2"><TrendingUp size={18} /> In Progress</div>
             <div className="text-2xl font-heading font-bold">₦{pendingEarnings.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground mt-1">Active orders</p>
           </div>
           <div className="glass-card p-5">
             <div className="flex items-center gap-2 text-green-600 mb-2"><Banknote size={18} /> Available</div>
             <div className="text-2xl font-heading font-bold">₦{availableBalance.toLocaleString()}</div>
-            <Button size="sm" className="mt-3 w-full" variant="outline" onClick={() => setShowWithdrawDialog(true)} disabled={availableBalance <= 0}>
-              Withdraw
+            <Button
+              size="sm"
+              className="mt-3 w-full"
+              variant="outline"
+              onClick={() => setShowWithdrawDialog(true)}
+              disabled={availableBalance < 1000}
+            >
+              <ArrowDownCircle size={14} className="mr-1" /> Withdraw
             </Button>
           </div>
           <div className="glass-card p-5">
             <div className="flex items-center gap-2 text-muted-foreground mb-2"><Package size={18} /> Active Vybs</div>
             <div className="text-2xl font-heading font-bold">{vybs?.filter((v: any) => v.is_published).length || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Published</p>
           </div>
         </div>
 
+        {/* Payments Received */}
+        <div className="mb-10">
+          <h2 className="text-lg font-heading font-bold mb-4">Payments Received</h2>
+          {recentPayments.length > 0 ? (
+            <div className="space-y-3">
+              {recentPayments.map((order: any) => (
+                <div key={order.id} className="glass-card p-4 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img
+                      src={order.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${order.profiles?.display_name}&background=7c5cfc&color=fff&size=64`}
+                      alt=""
+                      className="w-10 h-10 rounded-full shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="font-heading font-semibold text-sm truncate">{order.profiles?.display_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{order.vybs?.title} · {order.vyb_tiers?.name}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <span className="text-sm font-heading font-bold text-green-600 block">+₦{netEarnings(order).toLocaleString()}</span>
+                      <span className="text-[10px] text-muted-foreground">10% fee deducted</span>
+                    </div>
+                    <Badge className={statusColors[order.status] || ""}>{order.status?.replace(/_/g, " ")}</Badge>
+                    <Link to={`/order/${order.id}`}>
+                      <Button size="icon" variant="ghost" title="Message client">
+                        <MessageCircle size={16} />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">No payments received yet.</p>
+          )}
+        </div>
+
         {/* Orders */}
-        <h2 className="text-lg font-heading font-bold mb-4">Orders</h2>
+        <h2 className="text-lg font-heading font-bold mb-4">All Orders</h2>
         {orders && orders.length > 0 ? (
           <div className="space-y-4 mb-10">
             {orders.map((order: any) => (
               <div key={order.id} className="glass-card p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <img src={order.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${order.profiles?.display_name}`} alt="" className="w-10 h-10 rounded-full" />
+                    <img
+                      src={order.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${order.profiles?.display_name}&background=7c5cfc&color=fff`}
+                      alt=""
+                      className="w-10 h-10 rounded-full"
+                    />
                     <div>
                       <h3 className="font-heading font-semibold text-sm">{order.vybs?.title}</h3>
                       <p className="text-xs text-muted-foreground">from {order.profiles?.display_name} · {order.vyb_tiers?.name}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -234,16 +339,18 @@ export default function CreatorDashboard() {
                     <span className="text-sm font-heading font-semibold">₦{Number(order.amount).toLocaleString()}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 mt-3">
+                <div className="flex items-center gap-2 mt-3 flex-wrap">
                   {order.status === "pending" && (
                     <Button size="sm" onClick={() => updateStatus(order.id, "in_progress")}>Accept Order</Button>
                   )}
-                  {order.status === "in_progress" && (
+                  {(order.status === "in_progress" || order.status === "revision_requested") && (
                     <Button size="sm" onClick={() => navigate(`/order/${order.id}`)}>Go to Order</Button>
                   )}
-                  {order.status === "revision_requested" && (
-                    <Button size="sm" onClick={() => navigate(`/order/${order.id}`)}>View Revision</Button>
-                  )}
+                  <Link to={`/order/${order.id}`}>
+                    <Button size="sm" variant="outline">
+                      <MessageCircle size={14} className="mr-1" /> Message Client
+                    </Button>
+                  </Link>
                   <Link to={`/order/${order.id}`} className="text-xs text-primary hover:underline">View details</Link>
                 </div>
               </div>
@@ -306,7 +413,10 @@ export default function CreatorDashboard() {
       </div>
 
       {/* Withdrawal Dialog */}
-      <Dialog open={showWithdrawDialog} onOpenChange={setShowWithdrawDialog}>
+      <Dialog open={showWithdrawDialog} onOpenChange={(open) => {
+        setShowWithdrawDialog(open);
+        if (!open) { setAccountNumber(""); setAccountName(""); setSelectedBank(null); setWithdrawAmount(""); setResolveError(""); }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Withdraw Funds</DialogTitle>
@@ -332,9 +442,13 @@ export default function CreatorDashboard() {
                 Withdraw all (₦{availableBalance.toLocaleString()})
               </button>
             </div>
+
             <div>
               <Label>Bank</Label>
-              <Select onValueChange={(code) => setSelectedBank(NIGERIAN_BANKS.find(b => b.code === code) || null)}>
+              <Select onValueChange={(code) => {
+                setSelectedBank(NIGERIAN_BANKS.find(b => b.code === code) || null);
+                setAccountName("");
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your bank" />
                 </SelectTrigger>
@@ -345,21 +459,59 @@ export default function CreatorDashboard() {
                 </SelectContent>
               </Select>
             </div>
+
             <div>
               <Label>Account Number</Label>
-              <Input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="10-digit account number" maxLength={10} />
+              <Input
+                value={accountNumber}
+                onChange={(e) => {
+                  setAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 10));
+                  setAccountName("");
+                }}
+                placeholder="10-digit account number"
+                maxLength={10}
+              />
             </div>
+
             <div>
               <Label>Account Name</Label>
-              <Input value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="Name on bank account" />
+              <div className="relative">
+                <Input
+                  value={accountName}
+                  onChange={(e) => { setAccountName(e.target.value); setResolveError(""); }}
+                  placeholder={resolvingAccount ? "Verifying account…" : "Type or auto-filled"}
+                  readOnly={resolvingAccount}
+                />
+                {resolvingAccount && (
+                  <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />
+                )}
+              </div>
+              {accountName && !resolvingAccount && (
+                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                  <CheckCircle2 size={12} /> Verified: {accountName}
+                </p>
+              )}
+              {resolveError && !resolvingAccount && (
+                <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                  <AlertCircle size={12} /> {resolveError}
+                </p>
+              )}
             </div>
 
             <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-              Withdrawals are processed instantly via Paystack. Minimum withdrawal is ₦1,000.
+              Withdrawals are processed via Paystack. Minimum withdrawal is ₦1,000.
             </div>
 
-            <Button onClick={submitWithdrawal} disabled={withdrawing || !withdrawAmount || !selectedBank || !accountNumber || !accountName} className="w-full">
-              {withdrawing ? "Processing..." : `Withdraw ₦${Number(withdrawAmount || 0).toLocaleString()}`}
+            <Button
+              onClick={submitWithdrawal}
+              disabled={withdrawing || !withdrawAmount || !selectedBank || !accountNumber || !accountName || resolvingAccount}
+              className="w-full"
+            >
+              {withdrawing ? (
+                <><Loader2 size={14} className="mr-2 animate-spin" /> Processing…</>
+              ) : (
+                `Withdraw ₦${Number(withdrawAmount || 0).toLocaleString()}`
+              )}
             </Button>
           </div>
         </DialogContent>

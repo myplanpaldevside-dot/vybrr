@@ -133,11 +133,11 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
               }}
               transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <img
-                src="/vybrr-icon.png"
-                alt="Vybrr"
-                className="w-16 h-16 drop-shadow-2xl"
-              />
+              <svg width="64" height="64" viewBox="0 0 40 40" fill="none" aria-hidden="true" className="drop-shadow-2xl">
+                <circle cx="20" cy="20" r="20" fill="#7c5cfc" />
+                <circle cx="15" cy="20" r="7.5" stroke="white" strokeWidth="2.5" fill="none" opacity="0.95" />
+                <circle cx="25" cy="20" r="7.5" stroke="white" strokeWidth="2.5" fill="none" opacity="0.95" />
+              </svg>
               <motion.span
                 className="text-xl font-heading font-extrabold tracking-tight gradient-text"
                 initial={{ opacity: 0, y: 10 }}

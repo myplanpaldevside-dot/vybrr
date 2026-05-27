@@ -40,12 +40,18 @@ export default function VybDetail() {
     if (!profile || !selectedTier || !vyb) return;
     const deliveryDate = new Date();
     deliveryDate.setDate(deliveryDate.getDate() + selectedTier.delivery_days);
+    const amount = Number(selectedTier.price);
+    const platform_fee = Math.round(amount * 0.10 * 100) / 100;
+    const creator_earnings = Math.round(amount * 0.90 * 100) / 100;
+
     const { error } = await supabase.from("orders").insert({
       client_id: profile.id,
       creator_id: (vyb as any).profiles.id,
       vyb_id: vyb.id,
       tier_id: selectedTier.id,
-      amount: selectedTier.price,
+      amount,
+      platform_fee,
+      creator_earnings,
       requirements,
       delivery_date: deliveryDate.toISOString(),
       status: "pending",
@@ -64,6 +70,10 @@ export default function VybDetail() {
   const handleOrder = () => {
     if (!user) {
       navigate("/login");
+      return;
+    }
+    if (isOwnVyb) {
+      toast({ title: "This is your own Vyb", description: "You can't book your own service.", variant: "destructive" });
       return;
     }
     if (!profile || !selectedTier || !vyb) return;
@@ -104,6 +114,7 @@ export default function VybDetail() {
 
   const creator = (vyb as any).profiles;
   const tiers = (vyb as any).vyb_tiers || [];
+  const isOwnVyb = profile && creator && profile.id === creator.id;
 
   return (
     <div className="min-h-screen bg-background">
@@ -132,8 +143,9 @@ export default function VybDetail() {
                 {tiers.sort((a: any, b: any) => Number(a.price) - Number(b.price)).map((tier: any) => (
                   <button
                     key={tier.id}
-                    onClick={() => { setSelectedTier(tier); setShowOrderDialog(true); }}
-                    className={`glass-card p-5 text-left transition-all hover:border-primary/50 ${selectedTier?.id === tier.id ? "border-primary" : ""}`}
+                    onClick={() => { if (!isOwnVyb) { setSelectedTier(tier); setShowOrderDialog(true); } }}
+                    disabled={!!isOwnVyb}
+                    className={`glass-card p-5 text-left transition-all ${isOwnVyb ? "opacity-60 cursor-not-allowed" : "hover:border-primary/50 cursor-pointer"} ${selectedTier?.id === tier.id ? "border-primary" : ""}`}
                   >
                     <h3 className="font-heading font-semibold mb-1">{tier.name}</h3>
                     <div className="text-2xl font-heading font-bold text-primary mb-2">₦{Number(tier.price).toLocaleString()}</div>
@@ -184,9 +196,15 @@ export default function VybDetail() {
                 <div className="text-muted-foreground">Response</div>
               </div>
             </div>
-            <Button className="w-full" onClick={() => { if (tiers[0]) { setSelectedTier(tiers[0]); setShowOrderDialog(true); } }}>
-              Book this Vyb
-            </Button>
+            {isOwnVyb ? (
+              <Button className="w-full" variant="outline" onClick={() => navigate(`/dashboard/creator/vybs/${vyb.id}/edit`)}>
+                Edit this Vyb
+              </Button>
+            ) : (
+              <Button className="w-full" onClick={() => { if (tiers[0]) { setSelectedTier(tiers[0]); setShowOrderDialog(true); } }}>
+                Book this Vyb
+              </Button>
+            )}
           </div>
         </div>
       </div>

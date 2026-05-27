@@ -76,7 +76,9 @@ Deno.serve(async (req) => {
     const transferData = await transferRes.json();
     if (!transferData.status) throw new Error(transferData.message || "Failed to initiate transfer");
 
-    const transfer_code = transferData.data.transfer_code;
+    // Paystack may require OTP confirmation — treat as pending, not a failure
+    const transferStatus = transferData.data?.transfer_code ? "processing" : "pending";
+    const transfer_code = transferData.data?.transfer_code ?? null;
 
     // Step 3: Record withdrawal
     const { error: dbError } = await supabase.from("withdrawals").insert({
@@ -88,7 +90,7 @@ Deno.serve(async (req) => {
       account_name,
       transfer_code,
       paystack_recipient_code: recipient_code,
-      status: "processing",
+      status: transferStatus,
     });
     if (dbError) throw dbError;
 

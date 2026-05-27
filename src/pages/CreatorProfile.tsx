@@ -6,6 +6,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, Clock, ShoppingBag } from "lucide-react";
+import { VybCover } from "@/components/VybCover";
 
 export default function CreatorProfile() {
   const { username } = useParams();
@@ -114,9 +115,7 @@ export default function CreatorProfile() {
                 const minPrice = vyb.vyb_tiers?.length > 0 ? Math.min(...vyb.vyb_tiers.map((t: any) => Number(t.price))) : null;
                 return (
                   <Link to={`/vyb/${vyb.id}`} key={vyb.id} className="glass-card-hover overflow-hidden">
-                    <div className="h-32 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                      <span className="text-3xl font-heading font-bold text-primary/30">{vyb.title?.charAt(0)}</span>
-                    </div>
+                    <VybCover category={vyb.categories?.slug} className="h-32" />
                     <div className="p-4">
                       <Badge variant="secondary" className="text-xs mb-2">{vyb.categories?.name}</Badge>
                       <h3 className="font-heading font-semibold mb-2">{vyb.title}</h3>

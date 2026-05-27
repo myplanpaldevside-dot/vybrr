@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthOrbitBackground } from "@/components/AuthOrbitBackground";
 import { Eye, EyeOff } from "lucide-react";
-import vybrrLogo from "@/assets/vybrr-logo.png";
+import { VybrrLogo } from "@/components/VybrrLogo";
 
 function GoogleIcon() {
   return (
@@ -89,7 +89,7 @@ export default function Login() {
       <div className="w-full max-w-md space-y-8 relative z-10">
         <div className="text-center">
           <Link to="/">
-            <img src={vybrrLogo} alt="Vybrr" className="h-10 mx-auto mb-6" />
+            <VybrrLogo className="mx-auto mb-6 justify-center" />
           </Link>
           <h1 className="text-2xl font-heading font-bold">
             {showReset ? "Reset password" : "Welcome back"}

@@ -98,6 +98,7 @@ const Carousel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
       api.on("select", onSelect);
 
       return () => {
+   
         api?.off("select", onSelect);
       };
     }, [api, onSelect]);
@@ -115,6 +116,7 @@ const Carousel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
           canScrollNext,
         }}
       >
+    
         <div
           ref={ref}
           onKeyDownCapture={handleKeyDown}

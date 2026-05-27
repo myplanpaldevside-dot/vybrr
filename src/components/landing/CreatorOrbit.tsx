@@ -3,8 +3,8 @@ import { useState } from "react";
 
 const orbitCreators = [
   // Inner orbit - 4 creators
-  { name: "Chioma Okafor", avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=200&fit=crop&crop=face", specialty: "Brand Identity", orbit: 1 },
-  { name: "Tunde Bakare", avatar: "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=200&h=200&fit=crop&crop=face", specialty: "Video Editing", orbit: 1 },
+  { name: "Jemima", avatar: "https://sflmzaiigmirxhuvtpwi.supabase.co/storage/v1/object/public/avatars/b239b54b-89fd-48fa-b5b7-22712a665d7e/avatar.jpg", specialty: "Graphic Design", orbit: 1 },
+  { name: "Joseph", avatar: "https://sflmzaiigmirxhuvtpwi.supabase.co/storage/v1/object/public/avatars/0dd640ad-62e6-41f8-abfe-62a852dff514/avatar.JPEG", specialty: "Creator", orbit: 1 },
   { name: "Adaeze Nwankwo", avatar: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=200&h=200&fit=crop&crop=face", specialty: "Music Production", orbit: 1 },
   { name: "Oluwaseun Adeyemi", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face", specialty: "Motion Graphics", orbit: 1 },
   // Middle orbit - 6 creators
@@ -137,19 +137,18 @@ export function CreatorOrbit() {
 
       {/* Center Vybrr logo */}
       <div className="absolute inset-0 flex items-center justify-center z-10">
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-2xl shadow-primary/30 border border-primary/30">
-          <img
-            src="/vybrr-icon.png"
-            alt="Vybrr"
-            className="w-14 h-14 object-contain drop-shadow-lg"
-          />
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-2xl shadow-primary/30 border border-primary/30">
+          <svg width="48" height="48" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <circle cx="15" cy="20" r="7.5" stroke="white" strokeWidth="2.5" fill="none" opacity="0.95" />
+            <circle cx="25" cy="20" r="7.5" stroke="white" strokeWidth="2.5" fill="none" opacity="0.95" />
+          </svg>
         </div>
       </div>
 
       {/* Rotating pulse ring around center */}
       <div className="absolute inset-0 flex items-center justify-center z-[5]">
         <motion.div
-          className="w-24 h-24 rounded-2xl border border-primary/20"
+          className="w-24 h-24 rounded-full border border-primary/20"
           animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         />
