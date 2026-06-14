@@ -9,16 +9,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Camera } from "lucide-react";
+import { Camera, Trash2 } from "lucide-react";
 
 const SKILL_OPTIONS = ["UI/UX Design", "Graphic Design", "Video Editing", "Motion Graphics", "Music Production", "Songwriting", "Copywriting", "Content Writing", "Web Development", "Mobile Development", "Photography", "3D Animation", "Illustration", "Brand Identity", "Social Media"];
 
 export default function Settings() {
-  const { profile, refreshProfile } = useAuth();
+  const { profile, user, refreshProfile, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
@@ -83,6 +87,20 @@ export default function Settings() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!profile || !user) return;
+    setDeleting(true);
+    try {
+      await supabase.from("profiles").delete().eq("id", profile.id);
+      await supabase.auth.signOut();
+      navigate("/");
+      toast({ title: "Account deleted", description: "Your account and data have been removed." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      setDeleting(false);
     }
   };
 
@@ -161,8 +179,55 @@ export default function Settings() {
               {loading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
+
+          {/* Danger Zone */}
+          <div className="glass-card p-5 border-destructive/30">
+            <h2 className="font-heading font-semibold text-destructive mb-1 flex items-center gap-2">
+              <Trash2 size={16} /> Danger Zone
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Permanently delete your account and all associated data. This cannot be undone.
+            </p>
+            <Button variant="destructive" size="sm" onClick={() => { setShowDeleteDialog(true); setDeleteConfirm(""); }}>
+              Delete My Account
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Delete Account Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={(open) => { setShowDeleteDialog(open); setDeleteConfirm(""); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete your account?</DialogTitle>
+            <DialogDescription>
+              This will permanently remove your profile, Vybs, and all data. Active orders will be disrupted. This <strong>cannot be undone</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label className="text-sm">Type <span className="font-mono font-bold text-destructive">DELETE</span> to confirm</Label>
+              <Input
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder="DELETE"
+                className="mt-1.5 font-mono"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="flex-1">Cancel</Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirm !== "DELETE" || deleting}
+                className="flex-1"
+              >
+                {deleting ? "Deleting..." : "Delete Account"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -84,13 +84,13 @@ const defaultStyle: CatStyle = {
 };
 
 const fallbackCategories = [
-  { name: "Design", slug: "design", count: "3.2K creators" },
-  { name: "Video", slug: "video", count: "1.8K creators" },
-  { name: "Music", slug: "music", count: "1.4K creators" },
-  { name: "Writing", slug: "writing", count: "2.1K creators" },
-  { name: "Code", slug: "code", count: "2.6K creators" },
-  { name: "Photography", slug: "photography", count: "1.1K creators" },
-  { name: "Animation", slug: "animation", count: "890 creators" },
+  { name: "Design", slug: "design" },
+  { name: "Video", slug: "video" },
+  { name: "Music", slug: "music" },
+  { name: "Writing", slug: "writing" },
+  { name: "Code", slug: "code" },
+  { name: "Photography", slug: "photography" },
+  { name: "Animation", slug: "animation" },
 ];
 
 function CatCard({ cat, slugKey, Icon, style }: { cat: any; slugKey: string; Icon: React.ElementType; style: CatStyle }) {
@@ -118,7 +118,7 @@ function CatCard({ cat, slugKey, Icon, style }: { cat: any; slugKey: string; Ico
       <div className="shrink-0">
         <p className="text-sm font-semibold leading-tight whitespace-nowrap">{cat.name}</p>
         <p className="text-xs text-muted-foreground leading-tight mt-0.5 whitespace-nowrap">
-          {cat.count || "Browse"}
+          Explore
         </p>
       </div>
     </Link>

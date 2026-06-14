@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, CheckCircle, AlertCircle, Package, Star, MessageCircle, ShoppingBag } from "lucide-react";
+import { Clock, CheckCircle, AlertCircle, Package, Star, MessageCircle, ShoppingBag, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 const statusColors: Record<string, string> = {
@@ -45,6 +45,8 @@ export default function ClientDashboard() {
   const [comment, setComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [activeTab, setActiveTab] = useState("All");
+  const [cancelOrder, setCancelOrder] = useState<any>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["client-orders", profile?.id],
@@ -78,6 +80,20 @@ export default function ClientDashboard() {
 
   const totalSpent = (orders || []).filter((o: any) => o.status === "completed").reduce((s: number, o: any) => s + Number(o.amount), 0);
   const activeCount = (orders || []).filter((o: any) => ["pending", "in_progress", "revision_requested", "delivered"].includes(o.status)).length;
+
+  const confirmCancelOrder = async () => {
+    if (!cancelOrder) return;
+    setCancelling(true);
+    const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", cancelOrder.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["client-orders", profile?.id] });
+      toast({ title: "Order cancelled", description: "Contact support@vybrr.ng for refund queries." });
+      setCancelOrder(null);
+    }
+    setCancelling(false);
+  };
 
   const markComplete = async (order: any) => {
     const { error } = await supabase.from("orders").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", order.id);
@@ -246,6 +262,12 @@ export default function ClientDashboard() {
                     </Button>
                   </Link>
 
+                  {order.status === "pending" && (
+                    <Button size="sm" variant="ghost" className="gap-1.5 text-destructive hover:text-destructive" onClick={() => setCancelOrder(order)}>
+                      <XCircle size={14} /> Cancel Order
+                    </Button>
+                  )}
+
                   {order.status === "delivered" && (
                     <>
                       <Button size="sm" onClick={() => markComplete(order)} className="gap-1.5">
@@ -294,6 +316,24 @@ export default function ClientDashboard() {
           </div>
         )}
       </div>
+
+      {/* Cancel Order Dialog */}
+      <Dialog open={!!cancelOrder} onOpenChange={(open) => !open && setCancelOrder(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel this order?</DialogTitle>
+            <DialogDescription>
+              This will cancel your order for <strong>{cancelOrder?.vybs?.title}</strong>. For refund queries, contact <a href="mailto:support@vybrr.ng" className="text-primary underline">support@vybrr.ng</a>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 mt-2">
+            <Button variant="outline" onClick={() => setCancelOrder(null)} className="flex-1">Keep Order</Button>
+            <Button variant="destructive" onClick={confirmCancelOrder} disabled={cancelling} className="flex-1">
+              {cancelling ? "Cancelling..." : "Yes, Cancel"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Review Dialog */}
       <Dialog open={!!reviewOrder} onOpenChange={(open) => !open && setReviewOrder(null)}>
