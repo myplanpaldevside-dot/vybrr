@@ -1,0 +1,1 @@
+UPDATE public.profiles SET is_profile_complete = false WHERE id = '73e32716-3305-47b9-bda1-cddc7480f103';
