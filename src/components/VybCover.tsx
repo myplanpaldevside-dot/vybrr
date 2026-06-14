@@ -1,12 +1,13 @@
 import {
   Palette, Video, Music, PenTool, Code2, Camera, Sparkles,
   Layers, Clapperboard, Mic2, FileText,
+  type LucideIcon,
 } from "lucide-react";
 
 interface CategoryStyle {
   bg: string;
   iconBg: string;
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  icon: LucideIcon;
   iconClass: string;
   pattern: string;
 }

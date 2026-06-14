@@ -55,7 +55,7 @@ function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
 
       {/* Icon box */}
       <motion.div
-        animate={isInView ? step.iconAnim : {}}
+        animate={isInView ? (step.iconAnim as any) : {}}
         className="relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/25 flex items-center justify-center mb-5 shadow-lg shadow-primary/10 group-hover:shadow-primary/25 group-hover:border-primary/50 transition-shadow duration-300"
       >
         <step.icon size={26} className="text-primary" />
