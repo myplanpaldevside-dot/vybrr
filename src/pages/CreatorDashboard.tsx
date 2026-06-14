@@ -103,7 +103,7 @@ export default function CreatorDashboard() {
     queryKey: ["withdrawals", profile?.id],
     enabled: !!profile?.id,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("withdrawals")
         .select("*")
         .eq("creator_id", profile!.id)
