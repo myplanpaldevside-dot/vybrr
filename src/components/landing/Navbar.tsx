@@ -85,7 +85,7 @@ export function Navbar() {
                     )}
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+                <DropdownMenuContent align="end" className="w-80 max-w-[90vw] max-h-96 overflow-y-auto">
                   <div className="px-3 py-2 border-b border-border">
                     <p className="text-sm font-medium">Notifications</p>
                   </div>

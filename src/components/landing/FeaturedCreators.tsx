@@ -1,20 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Star, ArrowUpRight } from "lucide-react";
+import { Star, ArrowUpRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-const fallbackCreators = [
-  { id: null, username: null, display_name: "Chioma Okafor", avatar_url: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=500&fit=crop&crop=face", specialty: "Brand Identity", avg_rating: 4.9, startingAt: 45000, creator_level: "pro", skills: ["Brand Identity", "Logo Design"] },
-  { id: null, username: null, display_name: "Marcus Webb", avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop&crop=face", specialty: "Motion Graphics", avg_rating: 5.0, startingAt: 80000, creator_level: "expert", skills: ["Motion Graphics", "After Effects"] },
-  { id: null, username: null, display_name: "Adaeze Nwankwo", avatar_url: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=400&h=500&fit=crop&crop=face", specialty: "Music Production", avg_rating: 4.8, startingAt: 30000, creator_level: "pro", skills: ["Music Production", "Mixing"] },
-  { id: null, username: null, display_name: "Tunde Bakare", avatar_url: "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=400&h=500&fit=crop&crop=face", specialty: "Video Editing", avg_rating: 4.9, startingAt: 55000, creator_level: "expert", skills: ["Video Editing", "Color Grading"] },
-  { id: null, username: null, display_name: "Luna Park", avatar_url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=500&fit=crop&crop=face", specialty: "UI/UX Design", avg_rating: 4.7, startingAt: 60000, creator_level: "pro", skills: ["UI/UX", "Figma"] },
-  { id: null, username: null, display_name: "Emeka Eze", avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=500&fit=crop&crop=face", specialty: "Web Development", avg_rating: 5.0, startingAt: 100000, creator_level: "expert", skills: ["React", "Node.js"] },
-  { id: null, username: null, display_name: "Fatima Bello", avatar_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop&crop=face", specialty: "Content Writing", avg_rating: 4.8, startingAt: 20000, creator_level: "rising", skills: ["Copywriting", "SEO"] },
-  { id: null, username: null, display_name: "Aria Chen", avatar_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=500&fit=crop&crop=face", specialty: "Photography", avg_rating: 4.9, startingAt: 75000, creator_level: "pro", skills: ["Photography", "Retouching"] },
-];
 
 const levelConfig: Record<string, { label: string; badge: string; border: string; glow: string }> = {
   expert: {
@@ -60,36 +49,29 @@ function CreatorCard({ creator, index }: { creator: any; index: number }) {
         level.border, level.glow,
       ].join(" ")}
     >
-      {/* Avatar banner */}
       <div className="relative h-48 overflow-hidden shrink-0">
         <img
-          src={creator.avatar_url || `https://ui-avatars.com/api/?name=${creator.display_name}&background=7c5cfc&color=fff&size=400`}
+          src={creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.display_name)}&background=7c5cfc&color=fff&size=400`}
           alt={creator.display_name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        {/* Gradient fade */}
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
-
-        {/* Level badge */}
         <span className={`absolute top-3 right-3 text-[10px] px-2.5 py-1 rounded-full ${level.badge}`}>
           {level.label}
         </span>
       </div>
 
-      {/* Content */}
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div>
           <h3 className="font-heading font-bold text-sm leading-tight">{creator.display_name}</h3>
           <p className="text-xs text-muted-foreground mt-0.5">{creator.specialty}</p>
         </div>
 
-        {/* Rating */}
         <div className="flex items-center gap-1">
           <Star size={12} className="fill-accent text-accent" />
-          <span className="text-xs font-semibold">{creator.avg_rating || "New"}</span>
+          <span className="text-xs font-semibold">{creator.avg_rating > 0 ? creator.avg_rating : "New"}</span>
         </div>
 
-        {/* Skills */}
         {skills.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {skills.map((s: string) => (
@@ -100,7 +82,6 @@ function CreatorCard({ creator, index }: { creator: any; index: number }) {
           </div>
         )}
 
-        {/* Price + CTA */}
         <div className="mt-auto pt-3 border-t border-border/50 flex items-center justify-between">
           <div>
             {creator.startingAt ? (
@@ -120,14 +101,36 @@ function CreatorCard({ creator, index }: { creator: any; index: number }) {
   );
 
   return creator.username ? (
-    <Link to={`/creator/${creator.username}`} key={creator.display_name}>{card}</Link>
+    <Link to={`/creator/${creator.username}`}>{card}</Link>
   ) : (
-    <div key={creator.display_name}>{card}</div>
+    <div>{card}</div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="text-center py-16 px-4"
+    >
+      <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-5">
+        <Sparkles size={28} className="text-primary" />
+      </div>
+      <h3 className="text-lg font-heading font-bold mb-2">Creators are joining</h3>
+      <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-6">
+        Be one of the first creators on Vybrr. Set up your profile and start getting hired.
+      </p>
+      <Button asChild className="rounded-full px-8">
+        <Link to="/signup">Become a Creator</Link>
+      </Button>
+    </motion.div>
   );
 }
 
 export function FeaturedCreators() {
-  const { data: realCreators } = useQuery({
+  const { data: creators, isLoading } = useQuery({
     queryKey: ["featured-creators"],
     queryFn: async () => {
       const { data } = await supabase
@@ -137,7 +140,7 @@ export function FeaturedCreators() {
         .eq("is_profile_complete", true)
         .order("avg_rating", { ascending: false })
         .limit(8);
-      if (!data || data.length === 0) return null;
+      if (!data || data.length === 0) return [];
 
       const creatorIds = data.map((c) => c.id);
       const { data: vybs } = await supabase
@@ -155,11 +158,8 @@ export function FeaturedCreators() {
     },
   });
 
-  const creators = realCreators || fallbackCreators;
-
   return (
     <section className="py-24 relative">
-      {/* Ambient background */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-64 bg-primary/3 rounded-full blur-3xl" />
       </div>
@@ -179,17 +179,28 @@ export function FeaturedCreators() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-          {creators.map((creator: any, i: number) => (
-            <CreatorCard key={creator.display_name} creator={creator} index={i} />
-          ))}
-        </div>
-
-        <div className="text-center mt-12">
-          <Button variant="outline" asChild className="rounded-full px-8">
-            <Link to="/explore">Browse all creators</Link>
-          </Button>
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="rounded-2xl bg-muted animate-pulse" style={{ height: 280 }} />
+            ))}
+          </div>
+        ) : creators && creators.length > 0 ? (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+              {creators.map((creator: any, i: number) => (
+                <CreatorCard key={creator.id} creator={creator} index={i} />
+              ))}
+            </div>
+            <div className="text-center mt-12">
+              <Button variant="outline" asChild className="rounded-full px-8">
+                <Link to="/explore">Browse all creators</Link>
+              </Button>
+            </div>
+          </>
+        ) : (
+          <EmptyState />
+        )}
       </div>
     </section>
   );

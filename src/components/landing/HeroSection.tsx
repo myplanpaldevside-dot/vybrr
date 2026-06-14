@@ -50,21 +50,21 @@ export function HeroSection() {
               </Button>
             </div>
 
-            {/* Stats */}
+            {/* Trust indicators */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.6 }}
-              className="flex gap-8 sm:gap-12"
+              className="flex flex-wrap gap-3"
             >
               {[
-                { value: "12K+", label: "Creators" },
-                { value: "85K+", label: "Orders" },
-                { value: "140+", label: "Countries" },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <div className="text-2xl font-heading font-bold">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+                { icon: "🔒", label: "Secure payments" },
+                { icon: "⚡", label: "Fast delivery" },
+                { icon: "🌍", label: "African creators" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/60 border border-border/50">
+                  <span className="text-sm">{item.icon}</span>
+                  <span className="text-xs text-muted-foreground font-medium">{item.label}</span>
                 </div>
               ))}
             </motion.div>

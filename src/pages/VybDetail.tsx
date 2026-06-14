@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Star, Clock, RefreshCw, Check, MapPin } from "lucide-react";
+import { Star, Clock, RefreshCw, Check, MapPin, Image } from "lucide-react";
 
 export default function VybDetail() {
   const { id } = useParams();
@@ -106,14 +106,20 @@ export default function VybDetail() {
   if (!vyb) return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container pt-24 text-center">
-        <h1 className="text-2xl font-heading font-bold">Vyb not found</h1>
+      <div className="container pt-24 text-center max-w-sm mx-auto">
+        <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+          <Image size={28} className="text-muted-foreground" />
+        </div>
+        <h1 className="text-2xl font-heading font-bold mb-2">Vyb not found</h1>
+        <p className="text-muted-foreground mb-6">This Vyb may have been removed or is no longer available.</p>
+        <Button variant="outline" onClick={() => navigate(-1)}>Go back</Button>
       </div>
     </div>
   );
 
   const creator = (vyb as any).profiles;
   const tiers = (vyb as any).vyb_tiers || [];
+  const media: any[] = (vyb as any).vyb_media || [];
   const isOwnVyb = profile && creator && profile.id === creator.id;
 
   return (
@@ -135,6 +141,33 @@ export default function VybDetail() {
               <span className="flex items-center gap-1"><RefreshCw size={14} /> {vyb.revision_count} revisions</span>
               <span className="flex items-center gap-1"><Star size={14} className="text-accent" /> {vyb.avg_rating || "New"}</span>
             </div>
+
+            {/* Portfolio media gallery */}
+            {media.length > 0 && (
+              <div>
+                <h2 className="text-xl font-heading font-bold mb-4">Portfolio</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {media.map((item: any, i: number) => (
+                    <div key={item.id || i} className="aspect-video rounded-xl overflow-hidden bg-muted">
+                      {item.media_type === "video" ? (
+                        <video
+                          src={item.url}
+                          className="w-full h-full object-cover"
+                          controls
+                          preload="metadata"
+                        />
+                      ) : (
+                        <img
+                          src={item.url}
+                          alt={`Portfolio ${i + 1}`}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Pricing Tiers */}
             <div>

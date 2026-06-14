@@ -66,7 +66,7 @@ export default function Explore() {
         if (cat) query = query.eq("category_id", cat.id);
       }
       if (search) {
-        query = query.ilike("title", `%${search}%`);
+        query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
       }
 
       const { data } = await query;
